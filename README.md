@@ -27,6 +27,12 @@ pnpm install n8n-nodes-forest
 ### Setup
 
 ```bash
+# Use Node.js 20
+nvm use 20
+
+# Install n8n
+npm install -g n8n
+
 # Install dependencies
 pnpm install
 
@@ -35,6 +41,9 @@ pnpm build
 
 # Run in development mode (watch)
 pnpm dev
+
+# Run n8n
+n8n
 ```
 
 ### Testing in n8n
