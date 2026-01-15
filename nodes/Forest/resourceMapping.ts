@@ -46,15 +46,24 @@ function convertJsonSchemaToResourceMapperFields(
 		const propertySchema = value as JSONSchema7;
 		const displayName = propertySchema.description ? `${key} - ${propertySchema.description}` : key;
 
+		const fieldType = jsonSchemaTypeToFieldType(propertySchema.type || 'string');
+
 		const field: ResourceMapperField = {
 			id: key,
 			displayName,
-			type: jsonSchemaTypeToFieldType(propertySchema.type || 'string'),
+			type: fieldType,
 			required: requiredFields.includes(key),
 			defaultMatch: false,
 			canBeUsedToMatch: false,
 			display: true,
 		};
+
+		// Set default value for object and array types
+		if (fieldType === 'object') {
+			field.defaultValue = '{}';
+		} else if (fieldType === 'array') {
+			field.defaultValue = '[]';
+		}
 
 		if (
 			propertySchema.enum &&
@@ -104,18 +113,22 @@ export async function getToolParameters(
 		return { fields: [] };
 	}
 
-	const tools = await getAllTools(client.result);
-	const tool = tools.find((t): t is McpTool => t.name === toolId);
+	try {
+		const tools = await getAllTools(client.result);
+		const tool = tools.find((t): t is McpTool => t.name === toolId);
 
-	// Return empty fields if tool not found
-	if (!tool) {
-		return { fields: [] };
+		// Return empty fields if tool not found
+		if (!tool) {
+			return { fields: [] };
+		}
+
+		const schema = tool.inputSchema as JSONSchema7;
+		const requiredFields = Array.isArray(schema.required) ? schema.required : [];
+
+		const fields = convertJsonSchemaToResourceMapperFields(schema, requiredFields);
+
+		return { fields };
+	} finally {
+		await client.result.close();
 	}
-
-	const schema = tool.inputSchema as JSONSchema7;
-	const requiredFields = Array.isArray(schema.required) ? schema.required : [];
-
-	const fields = convertJsonSchemaToResourceMapperFields(schema, requiredFields);
-
-	return { fields };
 }
