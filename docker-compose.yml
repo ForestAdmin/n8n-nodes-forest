@@ -1,0 +1,15 @@
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    ports:
+      - '5678:5678'
+    environment:
+      - N8N_LOG_LEVEL=debug
+      - GENERIC_TIMEZONE=Europe/Paris
+      - N8N_CUSTOM_EXTENSIONS=/home/node/custom-nodes
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./:/home/node/custom-nodes/n8n-nodes-forest
+
+volumes:
+  n8n_data:
