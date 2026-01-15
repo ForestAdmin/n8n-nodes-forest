@@ -53,10 +53,15 @@ function isForbiddenError(error: unknown): boolean {
 	return errorHasCode(error, 403);
 }
 
+function isNotFoundError(error: unknown): boolean {
+	return errorHasCode(error, 404);
+}
+
 type ConnectMcpClientError =
 	| { type: 'invalid_url'; error: Error }
 	| { type: 'connection'; error: Error }
-	| { type: 'auth'; error: Error };
+	| { type: 'auth'; error: Error }
+	| { type: 'not_found'; error: Error };
 
 export function mapToNodeOperationError(
 	node: INode,
@@ -70,6 +75,11 @@ export function mapToNodeOperationError(
 		case 'auth':
 			return new NodeOperationError(node, error.error, {
 				message: 'Could not connect to your Forest MCP server. Authentication failed.',
+			});
+		case 'not_found':
+			return new NodeOperationError(node, error.error, {
+				message:
+					'MCP server not found. The MCP server has not been setup on your Forest agent. See https://github.com/ForestAdmin/agent-nodejs/blob/main/packages/mcp-server/README.md',
 			});
 		case 'connection':
 		default:
@@ -107,6 +117,8 @@ export async function connectMcpClient({
 	} catch (error) {
 		if (isUnauthorizedError(error) || isForbiddenError(error)) {
 			return createResultError({ type: 'auth', error: error as Error });
+		} else if (isNotFoundError(error)) {
+			return createResultError({ type: 'not_found', error: error as Error });
 		} else {
 			return createResultError({ type: 'connection', error: error as Error });
 		}
