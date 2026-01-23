@@ -18,7 +18,7 @@ import { connectMcpClient, getAuthHeadersAndEndpoint, mapToNodeOperationError } 
 
 export class Forest implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Forest',
+		displayName: 'Forest Admin',
 		name: 'forest',
 		icon: 'file:forest.svg',
 		group: ['transform'],
@@ -26,7 +26,7 @@ export class Forest implements INodeType {
 		subtitle: '={{$parameter["tool.value"]}}',
 		description: 'Connect to Forest MCP Server',
 		defaults: {
-			name: 'Forest',
+			name: 'Forest Admin',
 		},
 		inputs: ['main'],
 		outputs: ['main'],
