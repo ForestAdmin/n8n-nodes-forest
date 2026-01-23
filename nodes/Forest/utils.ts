@@ -79,7 +79,7 @@ export function mapToNodeOperationError(
 		case 'not_found':
 			return new NodeOperationError(node, error.error, {
 				message:
-					'MCP server not found. The MCP server has not been setup on your Forest agent. See https://github.com/ForestAdmin/agent-nodejs/blob/main/packages/mcp-server/README.md',
+					'MCP server not found. The MCP server has not been setup on your Forest agent. See https://docs.forestadmin.com/developer-guide-agents-nodejs/agent-customization/ai/mcp-server',
 			});
 		case 'connection':
 		default:
@@ -142,42 +142,54 @@ export async function getAuthHeadersAndEndpoint(
 
 			if (!result) return {};
 
-			const serverUrl = result.serverUrl || '';
+			const serverUrl = result.serverUrl?.trim() || '';
 			const endpointUrl = serverUrl.endsWith('/mcp') ? serverUrl : `${serverUrl}/mcp`;
 
-			if (!result.token) {
+			const token = result.token?.trim() || '';
+			if (!token) {
 				return {};
 			}
 
 			return {
-				headers: { Authorization: `Bearer ${result.token}` },
+				headers: { Authorization: `Bearer ${token}` },
 				endpointUrl,
 			};
 		}
 		case 'mcpOAuth2Api':
 		default: {
 			let result: {
-				oauthTokenData?: { access_token?: string };
+				oauthTokenData?: {
+					access_token?: string;
+					refresh_token?: string;
+					expires_in?: number;
+				};
 				serverUrl?: string;
 			} | null = null;
 
 			try {
+				// n8n automatically refreshes the token if expired when getCredentials is called
 				result = await ctx.getCredentials('forestMcpOAuth2Api');
-			} catch {
-				// Credentials not configured or not accessible
+			} catch (error) {
+				// This can happen if:
+				// - Credentials not configured
+				// - Token refresh failed (refresh_token expired or invalid)
+				// - OAuth server is unreachable
+				console.error('Failed to get OAuth2 credentials:', error);
 				return {};
 			}
 
 			if (!result) return {};
 
-			const serverUrl = result.serverUrl || '';
+			const serverUrl = result.serverUrl?.trim() || '';
 			const endpointUrl = serverUrl.endsWith('/mcp') ? serverUrl : `${serverUrl}/mcp`;
 
 			// Check if oauthTokenData exists and has an access_token
-			const accessToken = result.oauthTokenData?.access_token;
+			const accessToken = result.oauthTokenData?.access_token?.trim() || '';
 			if (!accessToken) {
 				// OAuth2 credentials exist but token data is not available yet
-				// This can happen if the user hasn't completed the OAuth flow
+				// This can happen if:
+				// - User hasn't completed the OAuth flow
+				// - Token refresh failed and n8n cleared the token data
 				return {};
 			}
 

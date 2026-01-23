@@ -3,7 +3,8 @@ import type { ICredentialType, INodeProperties } from 'n8n-workflow';
 export class ForestMcpOAuth2Api implements ICredentialType {
 	name = 'forestMcpOAuth2Api';
 	displayName = 'Forest MCP OAuth2 API';
-	documentationUrl = 'https://docs.forestadmin.com/';
+	documentationUrl =
+		'https://docs.forestadmin.com/developer-guide-agents-nodejs/agent-customization/ai/mcp-server';
 	extends = ['oAuth2Api'];
 	properties: INodeProperties[] = [
 		{

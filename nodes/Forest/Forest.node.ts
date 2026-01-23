@@ -8,7 +8,7 @@ import type {
 	INodeTypeDescription,
 	NodeExecutionWithMetadata,
 } from 'n8n-workflow';
-import { jsonParse, NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
+import { jsonParse, NodeOperationError } from 'n8n-workflow';
 import { ZodError } from 'zod';
 
 import * as listSearch from './listSearch';
@@ -28,8 +28,8 @@ export class Forest implements INodeType {
 		defaults: {
 			name: 'Forest MCP Client',
 		},
-		inputs: [NodeConnectionTypes.Main],
-		outputs: [NodeConnectionTypes.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'forestMcpApi',
