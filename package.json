@@ -18,7 +18,6 @@
     "node": ">=18.10",
     "pnpm": ">=9.1"
   },
-  "packageManager": "pnpm@9.1.4",
   "main": "index.js",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
@@ -35,13 +34,20 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
-      "dist/credentials/ForestApi.credentials.js"
+      "dist/credentials/ForestMcpApi.credentials.js",
+      "dist/credentials/ForestMcpOAuth2Api.credentials.js"
     ],
     "nodes": [
       "dist/nodes/Forest/Forest.node.js"
     ]
   },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "zod": "^3.24.0"
+  },
   "devDependencies": {
+    "@types/json-schema": "^7.0.15",
+    "@types/node": "^22.0.0",
     "@typescript-eslint/parser": "^7.15.0",
     "eslint": "^8.56.0",
     "eslint-plugin-n8n-nodes-base": "^1.16.1",
