@@ -14,7 +14,12 @@ import { ZodError } from 'zod';
 import * as listSearch from './listSearch';
 import * as resourceMapping from './resourceMapping';
 import type { McpAuthenticationOption } from './types';
-import { connectMcpClient, getAuthHeadersAndEndpoint, mapToNodeOperationError } from './utils';
+import {
+	cleanParameters,
+	connectMcpClient,
+	getAuthHeadersAndEndpoint,
+	mapToNodeOperationError,
+} from './utils';
 
 export class Forest implements INodeType {
 	description: INodeTypeDescription = {
@@ -242,7 +247,7 @@ export class Forest implements INodeType {
 					const result = (await client.result.callTool(
 						{
 							name: tool,
-							arguments: parameters,
+							arguments: cleanParameters(parameters),
 						},
 						undefined,
 						{

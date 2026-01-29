@@ -7,6 +7,42 @@ import type { McpAuthenticationOption, McpTool } from './types';
 
 export type Result<T, E> = { ok: true; result: T } | { ok: false; error: E };
 
+export function cleanParameters<T>(obj: T): T {
+	if (obj === null || obj === undefined) {
+		return obj;
+	}
+
+	if (Array.isArray(obj)) {
+		const cleanedArray = obj
+			.map((item) => cleanParameters(item))
+			.filter((item) => item !== undefined);
+		return cleanedArray as T;
+	}
+
+	if (typeof obj === 'object') {
+		const cleaned: Record<string, unknown> = {};
+		for (const [key, value] of Object.entries(obj)) {
+			const cleanedValue = cleanParameters(value);
+			// Skip undefined values and empty objects
+			if (cleanedValue !== undefined) {
+				if (
+					typeof cleanedValue === 'object' &&
+					cleanedValue !== null &&
+					!Array.isArray(cleanedValue) &&
+					Object.keys(cleanedValue).length === 0
+				) {
+					// Skip empty objects
+					continue;
+				}
+				cleaned[key] = cleanedValue;
+			}
+		}
+		return cleaned as T;
+	}
+
+	return obj;
+}
+
 function createResultOk<T>(result: T): Result<T, never> {
 	return { ok: true, result };
 }
