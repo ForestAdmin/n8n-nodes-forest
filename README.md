@@ -59,6 +59,10 @@ This node requires Forest API credentials:
 - **API Key**: Your Forest API key
 - **Base URL**: The Forest API base URL (default: https://api.forestadmin.com)
 
+## Usage
+
+For details on filters and aggregations syntax, see the [Forest Admin filters documentation](https://docs.forestadmin.com/developer-guide-agents-nodejs/data-sources/getting-started/queries/filters).
+
 ## Resources
 
 - [n8n Community Nodes Documentation](https://docs.n8n.io/integrations/community-nodes/)
