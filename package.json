@@ -8,7 +8,8 @@
 	"license": "MIT",
 	"homepage": "",
 	"author": {
-		"name": "Vincent Molinié"
+		"name": "Vincent Molinié",
+		"email": "molinie.vincent@gmail.com"
 	},
 	"repository": {
 		"type": "git",
