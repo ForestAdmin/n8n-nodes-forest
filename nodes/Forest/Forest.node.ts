@@ -29,7 +29,7 @@ export class Forest implements INodeType {
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["tool.value"]}}',
-		description: 'Connect to Forest MCP Server',
+		description: 'Make calls directly to Forest Admin securely with the same security, compliance, and control you rely on today through the Forest Admin MCP Server.',
 		defaults: {
 			name: 'Forest Admin',
 		},
