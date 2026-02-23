@@ -26,6 +26,9 @@ module.exports = {
 			plugins: ['eslint-plugin-n8n-nodes-base'],
 			extends: ['plugin:n8n-nodes-base/community'],
 			parser: 'jsonc-eslint-parser',
+			parserOptions: {
+				project: null,
+			},
 			rules: {
 				'n8n-nodes-base/community-package-json-name-still-default': 'off',
 			},
