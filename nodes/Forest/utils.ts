@@ -205,12 +205,11 @@ export async function getAuthHeadersAndEndpoint(
 			try {
 				// n8n automatically refreshes the token if expired when getCredentials is called
 				result = await ctx.getCredentials('forestMcpOAuth2Api');
-			} catch (error) {
+			} catch {
 				// This can happen if:
 				// - Credentials not configured
 				// - Token refresh failed (refresh_token expired or invalid)
 				// - OAuth server is unreachable
-				console.error('Failed to get OAuth2 credentials:', error);
 				return {};
 			}
 
