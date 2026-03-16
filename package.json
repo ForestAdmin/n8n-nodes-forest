@@ -1,6 +1,6 @@
 {
 	"name": "@forestnpm/n8n-nodes-forest",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "n8n community node for Forest",
 	"keywords": [
 		"n8n-community-node-package"
@@ -22,7 +22,7 @@
 	"main": "index.js",
 	"scripts": {
 		"preinstall": "npx only-allow pnpm",
-		"build": "node esbuild.config.mjs && gulp build:icons",
+		"build": "rm -rf dist && node esbuild.config.mjs && gulp build:icons",
 		"dev": "tsc --watch",
 		"format": "prettier nodes credentials --write",
 		"lint": "eslint nodes credentials package.json",
