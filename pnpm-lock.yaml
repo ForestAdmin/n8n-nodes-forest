@@ -7,14 +7,10 @@ settings:
 importers:
 
   .:
-    dependencies:
+    devDependencies:
       '@modelcontextprotocol/sdk':
         specifier: ^1.12.1
         version: 1.25.2(hono@4.11.4)(zod@3.25.67)
-      zod:
-        specifier: ^3.24.0
-        version: 3.25.67
-    devDependencies:
       '@n8n/eslint-plugin-community-nodes':
         specifier: ^0.7.0
         version: 0.7.0(eslint@8.57.1)(typescript@5.9.3)
@@ -51,6 +47,9 @@ importers:
       typescript:
         specifier: ^5.5.3
         version: 5.9.3
+      zod:
+        specifier: ^3.24.0
+        version: 3.25.67
 
 packages:
 
