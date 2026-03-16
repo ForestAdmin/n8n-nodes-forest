@@ -8,13 +8,13 @@ This is an n8n community node for integrating with Forest.
 
 1. Go to **Settings > Community Nodes**
 2. Select **Install**
-3. Enter `n8n-nodes-forest` in the input field
+3. Enter `@forestnpm/n8n-nodes-forest` in the input field
 4. Click **Install**
 
 ### Manual Installation
 
 ```bash
-pnpm install n8n-nodes-forest
+pnpm install @forestnpm/n8n-nodes-forest
 ```
 
 ## Development
@@ -50,7 +50,7 @@ n8n
 
 1. Build the package: `pnpm build`
 2. Link the package globally: `pnpm link --global`
-3. In your n8n installation directory: `pnpm link --global n8n-nodes-forest`
+3. In your n8n installation directory: `pnpm link --global @forestnpm/n8n-nodes-forest`
 4. Restart n8n
 
 ## Credentials
