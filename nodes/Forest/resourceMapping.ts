@@ -104,8 +104,7 @@ export async function getToolParameters(
 	const client = await connectMcpClient({
 		endpointUrl,
 		headers,
-		name: node.type,
-		version: node.typeVersion,
+		httpRequest: this.helpers.httpRequest,
 	});
 
 	// Return empty fields if connection fails (e.g., auth error, network error)

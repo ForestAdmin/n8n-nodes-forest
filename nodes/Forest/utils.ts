@@ -1,5 +1,3 @@
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import type { IExecuteFunctions, ILoadOptionsFunctions, INode } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 
@@ -51,7 +49,150 @@ function createResultError<E>(error: E): Result<never, E> {
 	return { ok: false, error };
 }
 
-export async function getAllTools(client: Client, cursor?: string): Promise<McpTool[]> {
+type JsonRpcResponse = {
+	jsonrpc: '2.0';
+	id: number;
+	result?: unknown;
+	error?: { code: number; message: string; data?: unknown };
+};
+
+type HttpRequestFn = (options: {
+	url: string;
+	method: 'POST';
+	headers: Record<string, string>;
+	body: unknown;
+	returnFullResponse: true;
+	timeout?: number;
+	skipSslCertificateValidation?: boolean;
+}) => Promise<{ body: JsonRpcResponse; headers: Record<string, unknown>; statusCode: number }>;
+
+function parseSseOrJson(raw: string): JsonRpcResponse {
+	try {
+		return JSON.parse(raw);
+	} catch {
+		// Parse SSE format: "event: message\ndata: {...}\n\n"
+		const lines = raw.split('\n');
+		for (const line of lines) {
+			if (line.startsWith('data: ')) {
+				const data = line.slice(6);
+				try {
+					return JSON.parse(data);
+				} catch {
+					// continue looking for valid JSON data line
+				}
+			}
+		}
+		throw new Error(`Unable to parse MCP response: ${raw.slice(0, 200)}`);
+	}
+}
+
+export class McpHttpClient {
+	private endpointUrl: string;
+	private headers: Record<string, string>;
+	private sessionId: string | undefined;
+	private requestId = 0;
+	private httpRequest: HttpRequestFn;
+
+	constructor(
+		endpointUrl: string,
+		headers: Record<string, string>,
+		httpRequest: HttpRequestFn,
+	) {
+		this.endpointUrl = endpointUrl;
+		this.headers = headers;
+		this.httpRequest = httpRequest;
+	}
+
+	private async sendRequest(
+		method: string,
+		params?: Record<string, unknown>,
+		timeout?: number,
+	): Promise<unknown> {
+		const requestHeaders: Record<string, string> = {
+			...this.headers,
+			'Content-Type': 'application/json',
+			Accept: 'application/json, text/event-stream',
+		};
+
+		if (this.sessionId) {
+			requestHeaders['mcp-session-id'] = this.sessionId;
+		}
+
+		const response = await this.httpRequest({
+			url: this.endpointUrl,
+			method: 'POST',
+			headers: requestHeaders,
+			body: JSON.stringify({
+				jsonrpc: '2.0',
+				id: ++this.requestId,
+				method,
+				params,
+			}),
+			returnFullResponse: true,
+			timeout,
+		});
+
+		// Capture session ID from response headers
+		const sessionId =
+			response.headers['mcp-session-id'] || response.headers['Mcp-Session-Id'];
+		if (sessionId) {
+			this.sessionId = String(sessionId);
+		}
+
+		let body: JsonRpcResponse;
+		if (typeof response.body === 'string') {
+			body = parseSseOrJson(response.body);
+		} else {
+			body = response.body;
+		}
+
+		if (body.error) {
+			const err = new Error(body.error.message) as Error & { code: number };
+			err.code = body.error.code;
+			throw err;
+		}
+
+		return body.result;
+	}
+
+	async initialize(): Promise<void> {
+		await this.sendRequest('initialize', {
+			protocolVersion: '2025-03-26',
+			capabilities: {},
+			clientInfo: { name: 'n8n-forest', version: '1.0.0' },
+		});
+
+		// Send initialized notification (no response expected, but we send as request)
+		try {
+			await this.sendRequest('notifications/initialized');
+		} catch {
+			// Notifications may not return a response, ignore errors
+		}
+	}
+
+	async listTools(params?: {
+		cursor?: string;
+	}): Promise<{ tools: McpTool[]; nextCursor?: string }> {
+		const result = (await this.sendRequest('tools/list', params as Record<string, unknown>)) as {
+			tools: McpTool[];
+			nextCursor?: string;
+		};
+		return result;
+	}
+
+	async callTool(
+		params: { name: string; arguments?: Record<string, unknown> },
+		timeout?: number,
+	): Promise<unknown> {
+		return this.sendRequest('tools/call', params as Record<string, unknown>, timeout);
+	}
+
+	async close(): Promise<void> {
+		// No persistent connection to close with HTTP transport
+	}
+}
+
+export async function getAllTools(client: McpHttpClient, cursor?: string): Promise<McpTool[]> {
 	const { tools, nextCursor } = await client.listTools({ cursor });
 
 	if (nextCursor) {
@@ -120,7 +261,7 @@ export function mapToNodeOperationError(
 		case 'connection':
 		default:
 			return new NodeOperationError(node, error.error, {
-				message: 'Could not connect to your Forest MCP server',
+				message: `Could not connect to your Forest MCP server: ${error.error.message}`,
 			});
 	}
 }
@@ -128,27 +269,22 @@ export function mapToNodeOperationError(
 export async function connectMcpClient({
 	headers,
 	endpointUrl,
-	name,
-	version,
+	httpRequest,
 }: {
 	endpointUrl: string;
 	headers?: Record<string, string>;
-	name: string;
-	version: number;
-}): Promise<Result<Client, ConnectMcpClientError>> {
+	httpRequest: HttpRequestFn;
+}): Promise<Result<McpHttpClient, ConnectMcpClientError>> {
 	const endpoint = normalizeAndValidateUrl(endpointUrl);
 
 	if (!endpoint.ok) {
 		return createResultError({ type: 'invalid_url', error: endpoint.error });
 	}
 
-	const client = new Client({ name, version: version.toString() }, { capabilities: {} });
+	const client = new McpHttpClient(endpoint.result.toString(), headers || {}, httpRequest);
 
 	try {
-		const transport = new StreamableHTTPClientTransport(endpoint.result, {
-			requestInit: { headers },
-		});
-		await client.connect(transport);
+		await client.initialize();
 		return createResultOk(client);
 	} catch (error) {
 		if (isUnauthorizedError(error) || isForbiddenError(error)) {

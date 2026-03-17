@@ -1,4 +1,3 @@
-import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import type {
 	IBinaryKeyData,
 	IDataObject,
@@ -10,6 +9,8 @@ import type {
 } from 'n8n-workflow';
 import { jsonParse, NodeOperationError } from 'n8n-workflow';
 import { ZodError } from 'zod';
+
+import type { CallToolResult } from './types';
 
 import * as listSearch from './listSearch';
 import * as resourceMapping from './resourceMapping';
@@ -218,8 +219,7 @@ export class Forest implements INodeType {
 		const client = await connectMcpClient({
 			endpointUrl,
 			headers,
-			name: node.type,
-			version: node.typeVersion,
+			httpRequest: this.helpers.httpRequest,
 		});
 
 		if (!client.ok) {
@@ -249,10 +249,7 @@ export class Forest implements INodeType {
 							name: tool,
 							arguments: cleanParameters(parameters),
 						},
-						undefined,
-						{
-							timeout: options.timeout ? Number(options.timeout) : undefined,
-						},
+						options.timeout ? Number(options.timeout) : undefined,
 					)) as CallToolResult;
 
 					let binaryIndex = 0;
