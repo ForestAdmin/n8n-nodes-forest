@@ -49,13 +49,6 @@ function createResultError<E>(error: E): Result<never, E> {
 	return { ok: false, error };
 }
 
-type JsonRpcRequest = {
-	jsonrpc: '2.0';
-	id: number;
-	method: string;
-	params?: Record<string, unknown>;
-};
-
 type JsonRpcResponse = {
 	jsonrpc: '2.0';
 	id: number;
@@ -67,12 +60,31 @@ type HttpRequestFn = (options: {
 	url: string;
 	method: 'POST';
 	headers: Record<string, string>;
-	body: JsonRpcRequest;
-	json: true;
+	body: unknown;
 	returnFullResponse: true;
 	timeout?: number;
 	skipSslCertificateValidation?: boolean;
-}) => Promise<{ body: JsonRpcResponse; headers: Record<string, string> }>;
+}) => Promise<{ body: JsonRpcResponse; headers: Record<string, unknown>; statusCode: number }>;
+
+function parseSseOrJson(raw: string): JsonRpcResponse {
+	try {
+		return JSON.parse(raw);
+	} catch {
+		// Parse SSE format: "event: message\ndata: {...}\n\n"
+		const lines = raw.split('\n');
+		for (const line of lines) {
+			if (line.startsWith('data: ')) {
+				const data = line.slice(6);
+				try {
+					return JSON.parse(data);
+				} catch {
+					// continue looking for valid JSON data line
+				}
+			}
+		}
+		throw new Error(`Unable to parse MCP response: ${raw.slice(0, 200)}`);
+	}
+}
 
 export class McpHttpClient {
 	private endpointUrl: string;
@@ -99,7 +111,7 @@ export class McpHttpClient {
 		const requestHeaders: Record<string, string> = {
 			...this.headers,
 			'Content-Type': 'application/json',
-			Accept: 'application/json',
+			Accept: 'application/json, text/event-stream',
 		};
 
 		if (this.sessionId) {
@@ -110,13 +122,12 @@ export class McpHttpClient {
 			url: this.endpointUrl,
 			method: 'POST',
 			headers: requestHeaders,
-			body: {
+			body: JSON.stringify({
 				jsonrpc: '2.0',
 				id: ++this.requestId,
 				method,
 				params,
-			},
-			json: true,
+			}),
 			returnFullResponse: true,
 			timeout,
 		});
@@ -125,10 +136,15 @@ export class McpHttpClient {
 		const sessionId =
 			response.headers['mcp-session-id'] || response.headers['Mcp-Session-Id'];
 		if (sessionId) {
-			this.sessionId = sessionId;
+			this.sessionId = String(sessionId);
 		}
 
-		const body = response.body;
+		let body: JsonRpcResponse;
+		if (typeof response.body === 'string') {
+			body = parseSseOrJson(response.body);
+		} else {
+			body = response.body;
+		}
 
 		if (body.error) {
 			const err = new Error(body.error.message) as Error & { code: number };
@@ -245,7 +261,7 @@ export function mapToNodeOperationError(
 		case 'connection':
 		default:
 			return new NodeOperationError(node, error.error, {
-				message: 'Could not connect to your Forest MCP server',
+				message: `Could not connect to your Forest MCP server: ${error.error.message}`,
 			});
 	}
 }
