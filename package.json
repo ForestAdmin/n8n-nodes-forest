@@ -21,7 +21,6 @@
 	},
 	"main": "index.js",
 	"scripts": {
-		"preinstall": "npx only-allow pnpm",
 		"build": "rm -rf dist && node esbuild.config.mjs && gulp build:icons",
 		"dev": "tsc --watch",
 		"format": "prettier nodes credentials --write",

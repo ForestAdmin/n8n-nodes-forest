@@ -21,8 +21,7 @@ export async function getTools(
 	const client = await connectMcpClient({
 		endpointUrl,
 		headers,
-		name: node.type,
-		version: node.typeVersion,
+		httpRequest: this.helpers.httpRequest,
 	});
 
 	// Throw error if connection fails (e.g., auth error, network error)
