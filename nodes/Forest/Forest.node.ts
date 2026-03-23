@@ -8,7 +8,6 @@ import type {
 	NodeExecutionWithMetadata,
 } from 'n8n-workflow';
 import { jsonParse, NodeOperationError } from 'n8n-workflow';
-import { ZodError } from 'zod';
 
 import type { CallToolResult } from './types';
 
@@ -289,19 +288,13 @@ export class Forest implements INodeType {
 						},
 					});
 				} catch (e) {
-					const errorMessage =
-						e instanceof ZodError
-							? e.errors.map((err) => `${err.path.join('.')}: ${err.message}`).join(', ')
-							: e instanceof Error
-								? e.message
-								: String(e);
+					const errorMessage = e instanceof Error ? e.message : String(e);
 
 					if (this.continueOnFail()) {
 						returnData.push({
 							json: {
 								error: {
 									message: errorMessage,
-									issues: e instanceof ZodError ? e.issues : undefined,
 								},
 							},
 							pairedItem: {

@@ -44,9 +44,6 @@ importers:
       typescript:
         specifier: ^5.5.3
         version: 5.9.3
-      zod:
-        specifier: ^3.24.0
-        version: 3.25.67
 
 packages:
 

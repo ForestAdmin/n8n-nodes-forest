@@ -1,4 +1,9 @@
-import type { ICredentialType, INodeProperties } from 'n8n-workflow';
+import type {
+	IAuthenticateGeneric,
+	ICredentialTestRequest,
+	ICredentialType,
+	INodeProperties,
+} from 'n8n-workflow';
 
 export class ForestMcpApi implements ICredentialType {
 	name = 'forestMcpApi';
@@ -27,4 +32,32 @@ export class ForestMcpApi implements ICredentialType {
 			description: 'The Bearer token to authenticate with your Forest MCP server',
 		},
 	];
+	authenticate: IAuthenticateGeneric = {
+		type: 'generic',
+		properties: {
+			headers: {
+				Authorization: '=Bearer {{$credentials.token}}',
+			},
+		},
+	};
+	test: ICredentialTestRequest = {
+		request: {
+			method: 'POST',
+			url: '={{$credentials.serverUrl.endsWith("/mcp") ? $credentials.serverUrl : $credentials.serverUrl + "/mcp"}}',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json, text/event-stream',
+			},
+			body: JSON.stringify({
+				jsonrpc: '2.0',
+				id: 1,
+				method: 'initialize',
+				params: {
+					protocolVersion: '2025-03-26',
+					capabilities: {},
+					clientInfo: { name: 'n8n-forest', version: '1.0.0' },
+				},
+			}),
+		},
+	};
 }
