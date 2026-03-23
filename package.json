@@ -1,6 +1,6 @@
 {
 	"name": "@forestnpm/n8n-nodes-forest",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"description": "n8n community node for Forest",
 	"keywords": [
 		"n8n-community-node-package"
@@ -53,8 +53,7 @@
 		"jsonc-eslint-parser": "^2.4.2",
 		"n8n-workflow": "*",
 		"prettier": "^3.3.2",
-		"typescript": "^5.5.3",
-		"zod": "^3.24.0"
+		"typescript": "^5.5.3"
 	},
 	"publishConfig": {
 		"access": "public"
