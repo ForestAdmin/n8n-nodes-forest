@@ -8,6 +8,7 @@ import type {
 export class ForestMcpApi implements ICredentialType {
 	name = 'forestMcpApi';
 	displayName = 'Forest MCP API';
+	icon = 'file:forest.svg' as const;
 	documentationUrl =
 		'https://docs.forestadmin.com/developer-guide-agents-nodejs/agent-customization/ai/mcp-server';
 	properties: INodeProperties[] = [

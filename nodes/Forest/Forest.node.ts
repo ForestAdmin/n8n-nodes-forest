@@ -5,9 +5,10 @@ import type {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
+	JsonObject,
 	NodeExecutionWithMetadata,
 } from 'n8n-workflow';
-import { jsonParse, NodeOperationError } from 'n8n-workflow';
+import { jsonParse, NodeApiError, NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
 
 import type { CallToolResult } from './types';
 
@@ -28,13 +29,15 @@ export class Forest implements INodeType {
 		icon: 'file:forest.svg',
 		group: ['transform'],
 		version: 1,
-		subtitle: '={{$parameter["tool.value"]}}',
+		subtitle: '={{$parameter["tool"]["value"]}}',
 		description: 'Make calls directly to Forest Admin securely with the same security, compliance, and control you rely on today through the Forest Admin MCP Server.',
 		defaults: {
 			name: 'Forest Admin',
 		},
-		inputs: ['main'],
-		outputs: ['main'],
+		// eslint-disable-next-line n8n-nodes-base/node-class-description-inputs-wrong-regular-node
+		inputs: [NodeConnectionTypes.Main],
+		// eslint-disable-next-line n8n-nodes-base/node-class-description-outputs-wrong
+		outputs: [NodeConnectionTypes.Main],
 		credentials: [
 			{
 				name: 'forestMcpApi',
@@ -304,7 +307,7 @@ export class Forest implements INodeType {
 						continue;
 					}
 
-					throw new NodeOperationError(node, errorMessage, {
+					throw new NodeApiError(node, e as JsonObject, {
 						itemIndex,
 					});
 				}

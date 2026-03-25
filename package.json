@@ -6,7 +6,7 @@
 		"n8n-community-node-package"
 	],
 	"license": "MIT",
-	"homepage": "",
+	"homepage": "https://github.com/ForestAdmin/n8n-nodes-forest",
 	"author": {
 		"name": "Pierre Merlet",
 		"email": "pierre.merlet@forestadmin.com"
