@@ -307,8 +307,9 @@ export class Forest implements INodeType {
 						continue;
 					}
 
-					throw new NodeApiError(node, e as JsonObject, {
+					throw new NodeApiError(node, e instanceof Error ? (e as unknown as JsonObject) : { message: String(e) }, {
 						itemIndex,
+						message: errorMessage,
 					});
 				}
 			}
