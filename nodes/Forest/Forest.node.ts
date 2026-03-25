@@ -29,7 +29,7 @@ export class Forest implements INodeType {
 		icon: 'file:forest.svg',
 		group: ['transform'],
 		version: 1,
-		subtitle: '={{$parameter["tool"]["value"]}}',
+		subtitle: '={{$parameter["operation"] + ": " + $parameter["tool"]["value"]}}',
 		description: 'Make calls directly to Forest Admin securely with the same security, compliance, and control you rely on today through the Forest Admin MCP Server.',
 		defaults: {
 			name: 'Forest Admin',
@@ -81,6 +81,39 @@ export class Forest implements INodeType {
 				name: 'credentials',
 				type: 'credentials',
 				default: '',
+			},
+			{
+				displayName: 'Resource',
+				name: 'resource',
+				type: 'options',
+				noDataExpression: true,
+				options: [
+					{
+						name: 'Tool',
+						value: 'tool',
+					},
+				],
+				default: 'tool',
+			},
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: {
+					show: {
+						resource: ['tool'],
+					},
+				},
+				options: [
+					{
+						name: 'Execute',
+						value: 'execute',
+						description: 'Execute a tool on the Forest Admin MCP Server',
+						action: 'Execute a tool',
+					},
+				],
+				default: 'execute',
 			},
 			{
 				displayName: 'Tool',

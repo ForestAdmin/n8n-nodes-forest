@@ -1,4 +1,3 @@
-import type { JSONSchema7, JSONSchema7TypeName } from 'json-schema';
 import type {
 	FieldType,
 	ILoadOptionsFunctions,
@@ -7,10 +6,10 @@ import type {
 	ResourceMapperFields,
 } from 'n8n-workflow';
 
-import type { McpAuthenticationOption, McpTool } from './types';
+import type { JsonSchema, JsonSchemaTypeName, McpAuthenticationOption, McpTool } from './types';
 import { connectMcpClient, getAllTools, getAuthHeadersAndEndpoint } from './utils';
 
-function jsonSchemaTypeToFieldType(type: JSONSchema7TypeName | JSONSchema7TypeName[]): FieldType {
+function jsonSchemaTypeToFieldType(type: JsonSchemaTypeName | JsonSchemaTypeName[]): FieldType {
 	const primaryType = Array.isArray(type) ? type[0] : type;
 
 	switch (primaryType) {
@@ -31,7 +30,7 @@ function jsonSchemaTypeToFieldType(type: JSONSchema7TypeName | JSONSchema7TypeNa
 }
 
 function convertJsonSchemaToResourceMapperFields(
-	schema: JSONSchema7,
+	schema: JsonSchema,
 	requiredFields: string[] = [],
 ): ResourceMapperField[] {
 	const fields: ResourceMapperField[] = [];
@@ -41,9 +40,7 @@ function convertJsonSchemaToResourceMapperFields(
 	}
 
 	for (const [key, value] of Object.entries(schema.properties)) {
-		if (typeof value === 'boolean') continue;
-
-		const propertySchema = value as JSONSchema7;
+		const propertySchema = value as JsonSchema;
 		const displayName = propertySchema.description ? `${key} - ${propertySchema.description}` : key;
 
 		const fieldType = jsonSchemaTypeToFieldType(propertySchema.type || 'string');
@@ -121,7 +118,7 @@ export async function getToolParameters(
 			return { fields: [] };
 		}
 
-		const schema = tool.inputSchema as JSONSchema7;
+		const schema = tool.inputSchema as JsonSchema;
 		const requiredFields = Array.isArray(schema.required) ? schema.required : [];
 
 		const fields = convertJsonSchemaToResourceMapperFields(schema, requiredFields);

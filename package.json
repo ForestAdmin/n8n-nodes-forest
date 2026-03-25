@@ -1,6 +1,6 @@
 {
 	"name": "@forestnpm/n8n-nodes-forest",
-	"version": "1.0.8",
+	"version": "1.0.9",
 	"description": "n8n community node for Forest",
 	"keywords": [
 		"n8n-community-node-package"
@@ -43,7 +43,6 @@
 	},
 	"devDependencies": {
 		"@n8n/eslint-plugin-community-nodes": "^0.7.0",
-		"@types/json-schema": "^7.0.15",
 		"@types/node": "^22.0.0",
 		"@typescript-eslint/parser": "^7.15.0",
 		"esbuild": "^0.27.3",

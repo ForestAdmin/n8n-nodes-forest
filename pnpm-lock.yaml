@@ -11,9 +11,6 @@ importers:
       '@n8n/eslint-plugin-community-nodes':
         specifier: ^0.7.0
         version: 0.7.0(eslint@8.57.1)(typescript@5.9.3)
-      '@types/json-schema':
-        specifier: ^7.0.15
-        version: 7.0.15
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.6
