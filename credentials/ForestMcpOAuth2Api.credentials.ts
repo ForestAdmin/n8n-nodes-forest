@@ -36,7 +36,7 @@ export class ForestMcpOAuth2Api implements ICredentialType {
 			type: 'string',
 			default: '',
 			required: true,
-			placeholder: 'e.g. https://your-auth-server.com/authorize',
+			placeholder: 'e.g. https://your-auth-server.com/oauth/authorize',
 			description: 'The OAuth2 authorization URL for your Forest Admin server',
 		},
 		{
@@ -45,7 +45,7 @@ export class ForestMcpOAuth2Api implements ICredentialType {
 			type: 'string',
 			default: '',
 			required: true,
-			placeholder: 'e.g. https://your-auth-server.com/token',
+			placeholder: 'e.g. https://your-auth-server.com/oauth/token',
 			description: 'The OAuth2 access token URL for your Forest Admin server',
 		},
 		{
