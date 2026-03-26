@@ -33,18 +33,20 @@ export class ForestMcpOAuth2Api implements ICredentialType {
 		{
 			displayName: 'Authorization URL',
 			name: 'authUrl',
-			type: 'hidden',
+			type: 'string',
 			default: '',
-			description:
-				'Populated automatically via OAuth 2.0 Dynamic Client Registration when "Use Dynamic Client Registration" is enabled',
+			required: true,
+			placeholder: 'e.g. https://your-auth-server.com/authorize',
+			description: 'The OAuth2 authorization URL for your Forest Admin server',
 		},
 		{
 			displayName: 'Access Token URL',
 			name: 'accessTokenUrl',
-			type: 'hidden',
+			type: 'string',
 			default: '',
-			description:
-				'Populated automatically via OAuth 2.0 Dynamic Client Registration when "Use Dynamic Client Registration" is enabled',
+			required: true,
+			placeholder: 'e.g. https://your-auth-server.com/token',
+			description: 'The OAuth2 access token URL for your Forest Admin server',
 		},
 		{
 			displayName: 'Authentication',

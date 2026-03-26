@@ -65,12 +65,12 @@ export class Forest implements INodeType {
 				type: 'options',
 				options: [
 					{
-						name: 'MCP OAuth2',
-						value: 'mcpOAuth2Api',
-					},
-					{
 						name: 'Bearer Auth',
 						value: 'bearerAuth',
+					},
+					{
+						name: 'MCP OAuth2',
+						value: 'mcpOAuth2Api',
 					},
 				],
 				default: 'mcpOAuth2Api',

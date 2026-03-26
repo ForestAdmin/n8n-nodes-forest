@@ -303,21 +303,12 @@ export async function getAuthHeadersAndEndpoint(
 ): Promise<{ headers?: Record<string, string>; endpointUrl?: string }> {
 	switch (authentication) {
 		case 'bearerAuth': {
-			let result: { token?: string; serverUrl?: string } | null = null;
+			const result = await ctx.getCredentials('forestMcpApi');
 
-			try {
-				result = await ctx.getCredentials('forestMcpApi');
-			} catch {
-				// Credentials not configured or not accessible
-				return {};
-			}
-
-			if (!result) return {};
-
-			const serverUrl = result.serverUrl?.trim() || '';
+			const serverUrl = String(result.serverUrl ?? '').trim();
 			const endpointUrl = serverUrl.endsWith('/mcp') ? serverUrl : `${serverUrl}/mcp`;
 
-			const token = result.token?.trim() || '';
+			const token = String(result.token ?? '').trim();
 			if (!token) {
 				return {};
 			}
@@ -329,38 +320,16 @@ export async function getAuthHeadersAndEndpoint(
 		}
 		case 'mcpOAuth2Api':
 		default: {
-			let result: {
-				oauthTokenData?: {
-					access_token?: string;
-					refresh_token?: string;
-					expires_in?: number;
-				};
-				serverUrl?: string;
-			} | null = null;
+			const result = await ctx.getCredentials('forestMcpOAuth2Api');
 
-			try {
-				// n8n automatically refreshes the token if expired when getCredentials is called
-				result = await ctx.getCredentials('forestMcpOAuth2Api');
-			} catch {
-				// This can happen if:
-				// - Credentials not configured
-				// - Token refresh failed (refresh_token expired or invalid)
-				// - OAuth server is unreachable
-				return {};
-			}
-
-			if (!result) return {};
-
-			const serverUrl = result.serverUrl?.trim() || '';
+			const serverUrl = String(result.serverUrl ?? '').trim();
 			const endpointUrl = serverUrl.endsWith('/mcp') ? serverUrl : `${serverUrl}/mcp`;
 
-			// Check if oauthTokenData exists and has an access_token
-			const accessToken = result.oauthTokenData?.access_token?.trim() || '';
+			const oauthTokenData = result.oauthTokenData as
+				| { access_token?: string }
+				| undefined;
+			const accessToken = String(oauthTokenData?.access_token ?? '').trim();
 			if (!accessToken) {
-				// OAuth2 credentials exist but token data is not available yet
-				// This can happen if:
-				// - User hasn't completed the OAuth flow
-				// - Token refresh failed and n8n cleared the token data
 				return {};
 			}
 
