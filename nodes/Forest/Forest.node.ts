@@ -10,17 +10,19 @@ import type {
 } from 'n8n-workflow';
 import { jsonParse, NodeApiError, NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
 
-import type { CallToolResult } from './types';
-
 import * as listSearch from './listSearch';
 import * as resourceMapping from './resourceMapping';
-import type { McpAuthenticationOption } from './types';
+import { TOOL_CATALOG } from './toolCatalog';
+import type { CallToolResult, McpAuthenticationOption } from './types';
 import {
 	cleanParameters,
 	connectMcpClient,
 	getAuthHeadersAndEndpoint,
 	mapToNodeOperationError,
 } from './utils';
+
+const ACTION_TOOLS = ['getActionForm', 'executeAction'];
+const RELATION_TOOLS = ['listRelated', 'associate', 'dissociate'];
 
 export class Forest implements INodeType {
 	description: INodeTypeDescription = {
@@ -122,9 +124,6 @@ export class Forest implements INodeType {
 				default: { mode: 'list', value: '' },
 				required: true,
 				description: 'The tool to use',
-				typeOptions: {
-					loadOptionsDependsOn: ['authentication'],
-				},
 				modes: [
 					{
 						displayName: 'From List',
@@ -141,6 +140,102 @@ export class Forest implements INodeType {
 						type: 'string',
 					},
 				],
+			},
+			{
+				displayName: 'Collection',
+				name: 'collectionName',
+				type: 'resourceLocator',
+				default: { mode: 'list', value: '' },
+				required: true,
+				description: 'The collection to operate on',
+				typeOptions: {
+					loadOptionsDependsOn: ['authentication'],
+				},
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						typeOptions: {
+							searchListMethod: 'getCollections',
+							searchable: true,
+						},
+					},
+					{
+						displayName: 'ID',
+						name: 'id',
+						type: 'string',
+					},
+				],
+				displayOptions: {
+					hide: {
+						'tool.value': [''],
+					},
+				},
+			},
+			{
+				displayName: 'Action',
+				name: 'actionName',
+				type: 'resourceLocator',
+				default: { mode: 'list', value: '' },
+				required: true,
+				description: 'The action to run on the selected collection',
+				typeOptions: {
+					loadOptionsDependsOn: ['authentication', 'collectionName.value'],
+				},
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						typeOptions: {
+							searchListMethod: 'getActions',
+							searchable: true,
+						},
+					},
+					{
+						displayName: 'ID',
+						name: 'id',
+						type: 'string',
+					},
+				],
+				displayOptions: {
+					show: {
+						'tool.value': ACTION_TOOLS,
+					},
+				},
+			},
+			{
+				displayName: 'Relation',
+				name: 'relationName',
+				type: 'resourceLocator',
+				default: { mode: 'list', value: '' },
+				required: true,
+				description: 'The to-many relation to operate on',
+				typeOptions: {
+					loadOptionsDependsOn: ['authentication', 'collectionName.value'],
+				},
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						typeOptions: {
+							searchListMethod: 'getRelations',
+							searchable: true,
+						},
+					},
+					{
+						displayName: 'ID',
+						name: 'id',
+						type: 'string',
+					},
+				],
+				displayOptions: {
+					show: {
+						'tool.value': RELATION_TOOLS,
+					},
+				},
 			},
 			{
 				displayName: 'Input Mode',
@@ -172,7 +267,7 @@ export class Forest implements INodeType {
 				noDataExpression: true,
 				required: true,
 				typeOptions: {
-					loadOptionsDependsOn: ['tool.value', 'authentication'],
+					loadOptionsDependsOn: ['tool.value'],
 					resourceMapper: {
 						resourceMapperMethod: 'getToolParameters',
 						mode: 'add',
@@ -269,7 +364,9 @@ export class Forest implements INodeType {
 			for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
 				try {
 					const tool = this.getNodeParameter('tool.value', itemIndex) as string;
+					const definition = TOOL_CATALOG[tool];
 					const options = this.getNodeParameter('options', itemIndex) as IDataObject;
+
 					let parameters: IDataObject = {};
 
 					if (inputMode === 'manual') {
@@ -279,10 +376,22 @@ export class Forest implements INodeType {
 						parameters = this.getNodeParameter('jsonInput', itemIndex) as IDataObject;
 					}
 
+					const args: IDataObject = { ...parameters };
+
+					if (definition?.needsCollection) {
+						args.collectionName = this.getNodeParameter('collectionName.value', itemIndex) as string;
+					}
+					if (definition?.needsAction) {
+						args.actionName = this.getNodeParameter('actionName.value', itemIndex) as string;
+					}
+					if (definition?.needsRelation) {
+						args.relationName = this.getNodeParameter('relationName.value', itemIndex) as string;
+					}
+
 					const result = (await client.result.callTool(
 						{
 							name: tool,
-							arguments: cleanParameters(parameters),
+							arguments: cleanParameters(args),
 						},
 						options.timeout ? Number(options.timeout) : undefined,
 					)) as CallToolResult;
