@@ -60,7 +60,7 @@ type HttpRequestFn = (options: {
 	url: string;
 	method: 'POST';
 	headers: Record<string, string>;
-	body: unknown;
+	body: string;
 	returnFullResponse: true;
 	timeout?: number;
 	skipSslCertificateValidation?: boolean;
