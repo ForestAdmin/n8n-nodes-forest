@@ -21,18 +21,19 @@
 	},
 	"main": "index.js",
 	"scripts": {
-		"build": "rm -rf dist && node esbuild.config.mjs && gulp build:icons",
+		"build": "rm -rf dist && tsc --noEmit && node esbuild.config.mjs && gulp build:icons",
 		"dev": "tsc --watch",
 		"format": "prettier nodes credentials --write",
-		"lint": "eslint nodes credentials package.json",
-		"lintfix": "eslint nodes credentials package.json --fix",
-		"prepublishOnly": "pnpm build && pnpm lint -c .eslintrc.prepublish.js nodes credentials package.json"
+		"lint": "n8n-node lint",
+		"lintfix": "n8n-node lint --fix",
+		"prepublishOnly": "pnpm build && pnpm lint"
 	},
 	"files": [
 		"dist"
 	],
 	"n8n": {
 		"n8nNodesApiVersion": 1,
+		"strict": false,
 		"credentials": [
 			"dist/credentials/ForestMcpApi.credentials.js",
 			"dist/credentials/ForestMcpOAuth2Api.credentials.js"
@@ -42,17 +43,13 @@
 		]
 	},
 	"devDependencies": {
-		"@n8n/eslint-plugin-community-nodes": "^0.7.0",
+		"@n8n/node-cli": "^0.28.0",
 		"@types/node": "^22.0.0",
-		"@typescript-eslint/parser": "^7.15.0",
 		"esbuild": "^0.27.3",
-		"eslint": "^8.56.0",
-		"eslint-plugin-n8n-nodes-base": "^1.16.1",
+		"eslint": "^9.32.0",
 		"gulp": "^4.0.2",
-		"jsonc-eslint-parser": "^2.4.2",
-		"n8n-workflow": "*",
-		"prettier": "^3.3.2",
-		"typescript": "^5.5.3"
+		"prettier": "^3.6.2",
+		"typescript": "^5.9.2"
 	},
 	"publishConfig": {
 		"access": "public"

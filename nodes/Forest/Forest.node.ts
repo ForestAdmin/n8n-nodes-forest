@@ -43,9 +43,8 @@ export class Forest implements INodeType {
 		defaults: {
 			name: 'Forest Admin',
 		},
-		// eslint-disable-next-line n8n-nodes-base/node-class-description-inputs-wrong-regular-node
+		usableAsTool: true,
 		inputs: [NodeConnectionTypes.Main],
-		// eslint-disable-next-line n8n-nodes-base/node-class-description-outputs-wrong
 		outputs: [NodeConnectionTypes.Main],
 		credentials: [
 			{

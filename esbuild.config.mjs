@@ -11,7 +11,6 @@ await esbuild.build({
 	target: 'es2019',
 	format: 'cjs',
 	outdir: 'dist',
-	// Keep n8n-workflow external (provided by n8n at runtime)
 	external: ['n8n-workflow'],
 	sourcemap: false,
 });
