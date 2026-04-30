@@ -1,6 +1,5 @@
 import type { ILoadOptionsFunctions, INodeListSearchResult } from 'n8n-workflow';
 
-import { TOOL_CATALOG } from './toolCatalog';
 import type {
 	CallToolResultContent,
 	JsonSchema,
@@ -16,21 +15,6 @@ import {
 
 function matchesFilter(name: string, filter?: string): boolean {
 	return !filter || name.toLowerCase().includes(filter.toLowerCase());
-}
-
-export async function getTools(
-	this: ILoadOptionsFunctions,
-	filter?: string,
-): Promise<INodeListSearchResult> {
-	const tools = Object.values(TOOL_CATALOG)
-		.filter((tool) => matchesFilter(tool.name, filter))
-		.map((tool) => ({
-			name: tool.name,
-			value: tool.name,
-			description: tool.description,
-		}));
-
-	return { results: tools };
 }
 
 export async function getCollections(

@@ -1,9 +1,14 @@
 import type { ResourceMapperField } from 'n8n-workflow';
 
+export type ResourceKey = 'record' | 'relation' | 'customAction';
+
 export type ToolDefinition = {
 	name: string;
 	title: string;
 	description: string;
+	resource: ResourceKey;
+	operation: string;
+	action: string;
 	needsCollection: boolean;
 	needsAction: boolean;
 	needsRelation: boolean;
@@ -87,6 +92,9 @@ export const TOOL_CATALOG: Record<string, ToolDefinition> = {
 		title: 'Describe a collection',
 		description:
 			"Discover a collection's schema: fields, types, operators, relations, and available actions. Always call this first before querying or modifying data.",
+		resource: 'record',
+		operation: 'describe',
+		action: 'Describe a collection',
 		needsCollection: true,
 		needsAction: false,
 		needsRelation: false,
@@ -96,6 +104,9 @@ export const TOOL_CATALOG: Record<string, ToolDefinition> = {
 		name: 'list',
 		title: 'List records',
 		description: 'Retrieve a list of records from the specified collection.',
+		resource: 'record',
+		operation: 'list',
+		action: 'List records',
 		needsCollection: true,
 		needsAction: false,
 		needsRelation: false,
@@ -105,6 +116,9 @@ export const TOOL_CATALOG: Record<string, ToolDefinition> = {
 		name: 'listRelated',
 		title: 'List records from a relation',
 		description: 'Retrieve a list of records from a one-to-many or many-to-many relation.',
+		resource: 'relation',
+		operation: 'list',
+		action: 'List related records',
 		needsCollection: true,
 		needsAction: false,
 		needsRelation: true,
@@ -114,6 +128,9 @@ export const TOOL_CATALOG: Record<string, ToolDefinition> = {
 		name: 'create',
 		title: 'Create a record',
 		description: 'Create a new record in the specified collection.',
+		resource: 'record',
+		operation: 'create',
+		action: 'Create a record',
 		needsCollection: true,
 		needsAction: false,
 		needsRelation: false,
@@ -123,6 +140,9 @@ export const TOOL_CATALOG: Record<string, ToolDefinition> = {
 		name: 'update',
 		title: 'Update a record',
 		description: 'Update an existing record in the specified collection.',
+		resource: 'record',
+		operation: 'update',
+		action: 'Update a record',
 		needsCollection: true,
 		needsAction: false,
 		needsRelation: false,
@@ -135,6 +155,9 @@ export const TOOL_CATALOG: Record<string, ToolDefinition> = {
 		name: 'delete',
 		title: 'Delete records',
 		description: 'Delete one or more records from the specified collection.',
+		resource: 'record',
+		operation: 'delete',
+		action: 'Delete records',
 		needsCollection: true,
 		needsAction: false,
 		needsRelation: false,
@@ -145,6 +168,9 @@ export const TOOL_CATALOG: Record<string, ToolDefinition> = {
 		title: 'Associate records in a relation',
 		description:
 			'Link a record to another through a one-to-many or many-to-many relation. For many-to-many relations, this creates a new entry in the join table.',
+		resource: 'relation',
+		operation: 'associate',
+		action: 'Associate records',
 		needsCollection: true,
 		needsAction: false,
 		needsRelation: true,
@@ -158,6 +184,9 @@ export const TOOL_CATALOG: Record<string, ToolDefinition> = {
 		title: 'Dissociate records from a relation',
 		description:
 			'Unlink records from a one-to-many or many-to-many relation. Does not delete the target records.',
+		resource: 'relation',
+		operation: 'dissociate',
+		action: 'Dissociate records',
 		needsCollection: true,
 		needsAction: false,
 		needsRelation: true,
@@ -171,11 +200,14 @@ export const TOOL_CATALOG: Record<string, ToolDefinition> = {
 		title: 'Retrieve action form',
 		description:
 			'Retrieve and validate the form for a specific action. Must be called before executeAction.',
+		resource: 'customAction',
+		operation: 'getForm',
+		action: 'Retrieve action form',
 		needsCollection: true,
 		needsAction: true,
 		needsRelation: false,
 		fields: [
-			arrayField('recordIds', 'recordIds - Record IDs (leave empty for global actions)'),
+			arrayField('recordIds', 'recordIds - Record IDs (use [] for global actions)', true),
 			objectField('values', 'values - Form field values'),
 		],
 	},
@@ -184,12 +216,23 @@ export const TOOL_CATALOG: Record<string, ToolDefinition> = {
 		title: 'Execute an action',
 		description:
 			'Execute a specific action on one or more records. Call getActionForm first and ensure canExecute is true.',
+		resource: 'customAction',
+		operation: 'execute',
+		action: 'Execute an action',
 		needsCollection: true,
 		needsAction: true,
 		needsRelation: false,
 		fields: [
-			arrayField('recordIds', 'recordIds - Record IDs (leave empty for global actions)'),
+			arrayField('recordIds', 'recordIds - Record IDs (use [] for global actions)', true),
 			objectField('values', 'values - Form field values'),
 		],
 	},
 };
+
+export const TOOL_BY_RESOURCE_OP: Record<string, ToolDefinition> = Object.fromEntries(
+	Object.values(TOOL_CATALOG).map((tool) => [`${tool.resource}:${tool.operation}`, tool]),
+);
+
+export function findTool(resource: string, operation: string): ToolDefinition | undefined {
+	return TOOL_BY_RESOURCE_OP[`${resource}:${operation}`];
+}

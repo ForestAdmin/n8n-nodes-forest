@@ -1,13 +1,14 @@
 import type { ILoadOptionsFunctions, ResourceMapperFields } from 'n8n-workflow';
 
-import { TOOL_CATALOG } from './toolCatalog';
+import { findTool } from './toolCatalog';
 
 export async function getToolParameters(
 	this: ILoadOptionsFunctions,
 ): Promise<ResourceMapperFields> {
-	const toolId = this.getNodeParameter('tool.value') as string;
+	const resource = this.getNodeParameter('resource') as string;
+	const operation = this.getNodeParameter('operation') as string;
 
-	const tool = TOOL_CATALOG[toolId];
+	const tool = findTool(resource, operation);
 	if (!tool) {
 		return { fields: [] };
 	}
