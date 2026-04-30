@@ -1,6 +1,6 @@
 {
 	"name": "@forestnpm/n8n-nodes-forest",
-	"version": "1.0.12",
+	"version": "1.1.0",
 	"description": "n8n community node for Forest",
 	"keywords": [
 		"n8n-community-node-package"
