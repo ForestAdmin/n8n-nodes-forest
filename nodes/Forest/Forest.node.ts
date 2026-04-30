@@ -10,17 +10,26 @@ import type {
 } from 'n8n-workflow';
 import { jsonParse, NodeApiError, NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
 
-import type { CallToolResult } from './types';
-
 import * as listSearch from './listSearch';
 import * as resourceMapping from './resourceMapping';
-import type { McpAuthenticationOption } from './types';
+import { findTool, TOOL_CATALOG } from './toolCatalog';
+import type { CallToolResult, McpAuthenticationOption } from './types';
 import {
 	cleanParameters,
 	connectMcpClient,
 	getAuthHeadersAndEndpoint,
 	mapToNodeOperationError,
 } from './utils';
+
+const operationsForResource = (resource: string) =>
+	Object.values(TOOL_CATALOG)
+		.filter((tool) => tool.resource === resource)
+		.map((tool) => ({
+			name: tool.title,
+			value: tool.operation,
+			description: tool.description,
+			action: tool.action,
+		}));
 
 export class Forest implements INodeType {
 	description: INodeTypeDescription = {
@@ -29,7 +38,7 @@ export class Forest implements INodeType {
 		icon: 'file:forest.svg',
 		group: ['transform'],
 		version: 1,
-		subtitle: '={{$parameter["operation"] + ": " + $parameter["tool"]["value"]}}',
+		subtitle: '={{$parameter["resource"] + ": " + $parameter["operation"]}}',
 		description: 'Make calls directly to Forest Admin securely with the same security, compliance, and control you rely on today through the Forest Admin MCP Server.',
 		defaults: {
 			name: 'Forest Admin',
@@ -89,11 +98,19 @@ export class Forest implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
-						name: 'Tool',
-						value: 'tool',
+						name: 'Record',
+						value: 'record',
+					},
+					{
+						name: 'Relation',
+						value: 'relation',
+					},
+					{
+						name: 'Custom',
+						value: 'customAction',
 					},
 				],
-				default: 'tool',
+				default: 'record',
 			},
 			{
 				displayName: 'Operation',
@@ -102,26 +119,45 @@ export class Forest implements INodeType {
 				noDataExpression: true,
 				displayOptions: {
 					show: {
-						resource: ['tool'],
+						resource: ['record'],
 					},
 				},
-				options: [
-					{
-						name: 'Execute',
-						value: 'execute',
-						description: 'Execute a tool on the Forest Admin MCP Server',
-						action: 'Execute a tool',
+				options: operationsForResource('record'),
+				default: 'list',
+			},
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: {
+					show: {
+						resource: ['relation'],
 					},
-				],
+				},
+				options: operationsForResource('relation'),
+				default: 'list',
+			},
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: {
+					show: {
+						resource: ['customAction'],
+					},
+				},
+				options: operationsForResource('customAction'),
 				default: 'execute',
 			},
 			{
-				displayName: 'Tool',
-				name: 'tool',
+				displayName: 'Collection',
+				name: 'collectionName',
 				type: 'resourceLocator',
 				default: { mode: 'list', value: '' },
 				required: true,
-				description: 'The tool to use',
+				description: 'The collection to operate on',
 				typeOptions: {
 					loadOptionsDependsOn: ['authentication'],
 				},
@@ -131,7 +167,7 @@ export class Forest implements INodeType {
 						name: 'list',
 						type: 'list',
 						typeOptions: {
-							searchListMethod: 'getTools',
+							searchListMethod: 'getCollections',
 							searchable: true,
 						},
 					},
@@ -141,6 +177,70 @@ export class Forest implements INodeType {
 						type: 'string',
 					},
 				],
+			},
+			{
+				displayName: 'Action',
+				name: 'actionName',
+				type: 'resourceLocator',
+				default: { mode: 'list', value: '' },
+				required: true,
+				description: 'The action to run on the selected collection',
+				typeOptions: {
+					loadOptionsDependsOn: ['authentication', 'collectionName.value'],
+				},
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						typeOptions: {
+							searchListMethod: 'getActions',
+							searchable: true,
+						},
+					},
+					{
+						displayName: 'ID',
+						name: 'id',
+						type: 'string',
+					},
+				],
+				displayOptions: {
+					show: {
+						resource: ['customAction'],
+					},
+				},
+			},
+			{
+				displayName: 'Relation',
+				name: 'relationName',
+				type: 'resourceLocator',
+				default: { mode: 'list', value: '' },
+				required: true,
+				description: 'The to-many relation to operate on',
+				typeOptions: {
+					loadOptionsDependsOn: ['authentication', 'collectionName.value'],
+				},
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						typeOptions: {
+							searchListMethod: 'getRelations',
+							searchable: true,
+						},
+					},
+					{
+						displayName: 'ID',
+						name: 'id',
+						type: 'string',
+					},
+				],
+				displayOptions: {
+					show: {
+						resource: ['relation'],
+					},
+				},
 			},
 			{
 				displayName: 'Input Mode',
@@ -160,6 +260,11 @@ export class Forest implements INodeType {
 						description: 'Specify the input data as a JSON object',
 					},
 				],
+				displayOptions: {
+					hide: {
+						operation: ['describe'],
+					},
+				},
 			},
 			{
 				displayName: 'Parameters',
@@ -172,7 +277,7 @@ export class Forest implements INodeType {
 				noDataExpression: true,
 				required: true,
 				typeOptions: {
-					loadOptionsDependsOn: ['tool.value', 'authentication'],
+					loadOptionsDependsOn: ['resource', 'operation'],
 					resourceMapper: {
 						resourceMapperMethod: 'getToolParameters',
 						mode: 'add',
@@ -186,6 +291,9 @@ export class Forest implements INodeType {
 				displayOptions: {
 					show: {
 						inputMode: ['manual'],
+					},
+					hide: {
+						operation: ['describe'],
 					},
 				},
 			},
@@ -201,6 +309,9 @@ export class Forest implements INodeType {
 				displayOptions: {
 					show: {
 						inputMode: ['json'],
+					},
+					hide: {
+						operation: ['describe'],
 					},
 				},
 			},
@@ -268,21 +379,48 @@ export class Forest implements INodeType {
 
 			for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
 				try {
-					const tool = this.getNodeParameter('tool.value', itemIndex) as string;
+					const resource = this.getNodeParameter('resource', itemIndex) as string;
+					const operation = this.getNodeParameter('operation', itemIndex) as string;
+					const definition = findTool(resource, operation);
+
+					if (!definition) {
+						throw new NodeOperationError(
+							node,
+							`Unknown operation "${operation}" for resource "${resource}"`,
+							{ itemIndex },
+						);
+					}
+
+					const tool = definition.name;
 					const options = this.getNodeParameter('options', itemIndex) as IDataObject;
+
 					let parameters: IDataObject = {};
 
-					if (inputMode === 'manual') {
-						const rawParams = this.getNodeParameter('parameters.value', itemIndex);
-						parameters = (rawParams as IDataObject) ?? {};
-					} else {
-						parameters = this.getNodeParameter('jsonInput', itemIndex) as IDataObject;
+					if (definition.fields.length > 0) {
+						if (inputMode === 'manual') {
+							const rawParams = this.getNodeParameter('parameters.value', itemIndex);
+							parameters = (rawParams as IDataObject) ?? {};
+						} else {
+							parameters = this.getNodeParameter('jsonInput', itemIndex) as IDataObject;
+						}
+					}
+
+					const args: IDataObject = { ...parameters };
+
+					if (definition?.needsCollection) {
+						args.collectionName = this.getNodeParameter('collectionName.value', itemIndex) as string;
+					}
+					if (definition?.needsAction) {
+						args.actionName = this.getNodeParameter('actionName.value', itemIndex) as string;
+					}
+					if (definition?.needsRelation) {
+						args.relationName = this.getNodeParameter('relationName.value', itemIndex) as string;
 					}
 
 					const result = (await client.result.callTool(
 						{
 							name: tool,
-							arguments: cleanParameters(parameters),
+							arguments: cleanParameters(args),
 						},
 						options.timeout ? Number(options.timeout) : undefined,
 					)) as CallToolResult;
