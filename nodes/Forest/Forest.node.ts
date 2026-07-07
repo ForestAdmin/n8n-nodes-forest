@@ -13,7 +13,7 @@ import { jsonParse, NodeApiError, NodeConnectionTypes, NodeOperationError } from
 import * as listSearch from './listSearch';
 import * as resourceMapping from './resourceMapping';
 import { findTool, TOOL_CATALOG } from './toolCatalog';
-import type { CallToolResult, McpAuthenticationOption } from './types';
+import type { CallToolResult, CallToolResultContent, McpAuthenticationOption } from './types';
 import {
 	cleanParameters,
 	connectMcpClient,
@@ -423,6 +423,21 @@ export class Forest implements INodeType {
 						},
 						options.timeout ? Number(options.timeout) : undefined,
 					)) as CallToolResult;
+
+					if (result.isError) {
+						const message = result.content
+							.filter(
+								(item): item is Extract<CallToolResultContent, { type: 'text' }> =>
+									item.type === 'text',
+							)
+							.map((item) => item.text)
+							.join('\n')
+							.trim();
+
+						throw new NodeOperationError(node, message || `Tool "${tool}" reported an error`, {
+							itemIndex,
+						});
+					}
 
 					let binaryIndex = 0;
 					const binary: IBinaryKeyData = {};
