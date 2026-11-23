@@ -9,8 +9,7 @@ export class ForestMcpApi implements ICredentialType {
 	name = 'forestMcpApi';
 	displayName = 'Forest MCP API';
 	icon = 'file:forest.svg' as const;
-	documentationUrl =
-		'https://docs.forestadmin.com/developer-guide-agents-nodejs/agent-customization/ai/mcp-server';
+	documentationUrl = 'https://docs.forest.app/product/embed/mcp-server';
 	properties: INodeProperties[] = [
 		{
 			displayName: 'Server URL',
@@ -19,7 +18,7 @@ export class ForestMcpApi implements ICredentialType {
 			default: '',
 			required: true,
 			placeholder: 'e.g. https://your-server.com',
-			description: 'The Forest Admin server URL (without /mcp suffix)',
+			description: 'The Forest server URL (without /mcp suffix)',
 		},
 		{
 			displayName: 'Token',

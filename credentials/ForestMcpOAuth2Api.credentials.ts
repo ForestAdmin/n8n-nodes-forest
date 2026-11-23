@@ -4,8 +4,7 @@ export class ForestMcpOAuth2Api implements ICredentialType {
 	name = 'forestMcpOAuth2Api';
 	displayName = 'Forest MCP OAuth2 API';
 	icon = 'file:forest.svg' as const;
-	documentationUrl =
-		'https://docs.forestadmin.com/developer-guide-agents-nodejs/agent-customization/ai/mcp-server';
+	documentationUrl = 'https://docs.forest.app/product/embed/mcp-server';
 	extends = ['oAuth2Api'];
 	properties: INodeProperties[] = [
 		{
@@ -15,7 +14,7 @@ export class ForestMcpOAuth2Api implements ICredentialType {
 			default: '',
 			required: true,
 			placeholder: 'e.g. https://your-server.com',
-			description: 'The url of your Forest Admin server (without /mcp suffix)',
+			description: 'The url of your Forest server (without /mcp suffix)',
 		},
 		{
 			displayName: 'Use Dynamic Client Registration',
@@ -37,7 +36,7 @@ export class ForestMcpOAuth2Api implements ICredentialType {
 			default: '',
 			required: true,
 			placeholder: 'e.g. https://your-auth-server.com/oauth/authorize',
-			description: 'The OAuth2 authorization URL for your Forest Admin server',
+			description: 'The OAuth2 authorization URL for your Forest server',
 		},
 		{
 			displayName: 'Access Token URL',
@@ -46,7 +45,7 @@ export class ForestMcpOAuth2Api implements ICredentialType {
 			default: '',
 			required: true,
 			placeholder: 'e.g. https://your-auth-server.com/oauth/token',
-			description: 'The OAuth2 access token URL for your Forest Admin server',
+			description: 'The OAuth2 access token URL for your Forest server',
 		},
 		{
 			displayName: 'Authentication',

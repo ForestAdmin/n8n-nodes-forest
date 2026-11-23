@@ -33,15 +33,15 @@ const operationsForResource = (resource: string) =>
 
 export class Forest implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Forest Admin',
+		displayName: 'Forest',
 		name: 'forest',
 		icon: 'file:forest.svg',
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["resource"] + ": " + $parameter["operation"]}}',
-		description: 'Make calls directly to Forest Admin securely with the same security, compliance, and control you rely on today through the Forest Admin MCP Server.',
+		description: 'Make calls directly to Forest securely with the same security, compliance, and control you rely on today through the Forest MCP Server.',
 		defaults: {
-			name: 'Forest Admin',
+			name: 'Forest',
 		},
 		usableAsTool: true,
 		inputs: [NodeConnectionTypes.Main],

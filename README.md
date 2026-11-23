@@ -55,18 +55,18 @@ n8n
 
 ## Credentials
 
-This node requires Forest API credentials:
-- **API Key**: Your Forest API key
-- **Base URL**: The Forest API base URL (default: https://api.forestadmin.com)
+The node calls your Forest MCP server and supports two credential types (see the [Forest MCP server documentation](https://docs.forest.app/product/embed/mcp-server)):
+- **Forest MCP API**: your Forest server URL (without the `/mcp` suffix) and a bearer token
+- **Forest MCP OAuth2 API**: your Forest server URL, with OAuth2 (optionally through Dynamic Client Registration)
 
 ## Usage
 
-For details on filters and aggregations syntax, see the [Forest Admin filters documentation](https://docs.forestadmin.com/developer-guide-agents-nodejs/data-sources/getting-started/queries/filters).
+For details on filters and aggregations syntax, see the [Forest filters documentation](https://docs.forest.app/reference/agent-api/nodejs#conditiontree-utilities).
 
 ## Resources
 
 - [n8n Community Nodes Documentation](https://docs.n8n.io/integrations/community-nodes/)
-- [Forest Documentation](https://docs.forestadmin.com/)
+- [Forest Documentation](https://docs.forest.app/)
 
 ## License
 
