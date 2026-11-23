@@ -256,7 +256,7 @@ export function mapToNodeOperationError(
 		case 'not_found':
 			return new NodeOperationError(node, error.error, {
 				message:
-					'MCP server not found. The MCP server has not been setup on your Forest agent. See https://docs.forestadmin.com/developer-guide-agents-nodejs/agent-customization/ai/mcp-server',
+					'MCP server not found. The MCP server has not been setup on your Forest agent. See https://docs.forest.app/product/embed/mcp-server',
 			});
 		case 'connection':
 		default:
