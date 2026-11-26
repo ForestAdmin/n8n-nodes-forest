@@ -1,6 +1,6 @@
 # n8n-nodes-forest
 
-This is an n8n community node for integrating with Forest.
+An n8n community node that lists, creates, updates and deletes Forest records, works on relations, and runs custom actions through your Forest MCP server.
 
 ## Installation
 
@@ -55,11 +55,16 @@ n8n
 
 ## Credentials
 
-The node calls your Forest MCP server and supports two credential types (see the [Forest MCP server documentation](https://docs.forest.app/product/embed/mcp-server)):
-- **Forest MCP API**: your Forest server URL (without the `/mcp` suffix) and a bearer token
-- **Forest MCP OAuth2 API**: your Forest server URL, with OAuth2 (optionally through Dynamic Client Registration)
+The node calls your Forest [MCP server](https://docs.forest.app/product/embed/mcp-server) and supports two credential types. Both ask for your Forest server URL, without the `/mcp` suffix.
+
+- **Forest MCP OAuth2 API** (default): signs in as you, through OAuth2 with optional Dynamic Client Registration. The workflow runs with your own permissions.
+- **Forest MCP API** (Bearer Auth): an application token of a Forest service account, which starts with `fgw_`. Use it for workflows that run unattended.
+
+Personal tokens are not accepted by the MCP server. To create an application token, a project admin opens **Project Settings** → **Service accounts**, creates a service account with a role and a team, then selects **Generate application token**. Forest shows the secret only once. The workflow gets the permissions of the account's role.
 
 ## Usage
+
+The node has three resources: **Record** (describe a collection, list, create, update, delete), **Relation** (list, associate, dissociate) and **Custom** (retrieve an action form, execute an action). It doesn't trigger workflows on Forest events.
 
 For details on filters and aggregations syntax, see the [Forest filters documentation](https://docs.forest.app/reference/agent-api/nodejs#conditiontree-utilities).
 
